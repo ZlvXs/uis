@@ -138,7 +138,7 @@ end
 
 local uikeybind = Enum.KeyCode.F1
 local library = {
-   Title = '<font color="rgb(255, 255, 255)">eclipse.</font><font color="rgb(189, 172, 255)">wtf</font> | example by quinn ',
+   Title = '<font color="rgb(255, 255, 255)">eclipse.</font><font color="rgb(189, 172, 255)">wtf</font> | example by quinn / @9onean',
    keybind = uikeybind,
    Watermark = createWatermark(),
    Colors = {
