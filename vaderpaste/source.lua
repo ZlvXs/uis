@@ -35,7 +35,10 @@ local floor = math.floor
 local min = math.min
 local abs = math.abs
 
--- library init
+if getgenv().library then
+	getgenv().library:unload()
+end
+
 getgenv().library = {
 	flags = {},
 	config_flags = {},
@@ -65,9 +68,9 @@ local config_flags = library.config_flags
 
 local themes = {
 	preset = {
-		["outline"] = rgb(32, 32, 38), --
-		["inline"] = rgb(60, 55, 75), --
-		["accent"] = rgb(100, 100, 255), --
+		["outline"] = rgb(32, 32, 38),
+		["inline"] = rgb(60, 55, 75),
+		["accent"] = rgb(100, 100, 255),
 		["contrast"] = rgb(35, 35, 47),
 		["text"] = rgb(170, 170, 170),
 		["unselected_text"] = rgb(90, 90, 90),
@@ -162,8 +165,16 @@ local keys = {
 
 library.__index = library
 
-for _, path in next, library.folders do
-	makefolder(library.directory .. path)
+if not isfile(library.directory) then
+    makefolder(library.directory)
+end
+
+if not isfile(library.directory .. "/fonts") then
+    makefolder(library.directory .. "/fonts")
+end
+
+if not isfile(library.directory .. "/configs") then
+    makefolder(library.directory .. "/configs")
 end
 
 if not isfile(library.directory .. "/fonts/main.ttf") then
@@ -190,10 +201,7 @@ if not isfile(library.directory .. "/fonts/main_encoded.ttf") then
 end
 
 library.font = Font.new(getcustomasset(library.directory .. "/fonts/main_encoded.ttf"), Enum.FontWeight.Regular)
---
 
--- functions
--- misc functions
 function library.to_screen_point(position)
 	return camera:WorldToViewportPoint(position)
 end
@@ -411,7 +419,6 @@ function library:create(instance, options)
 
 	return ins
 end
---
 
 library.gui = library:create("ScreenGui", {
 	Enabled = true,
@@ -421,7 +428,6 @@ library.gui = library:create("ScreenGui", {
 	ZIndexBehavior = 1,
 })
 
--- library functions
 function library:window(properties)
 	local cfg = {
 		name = properties.Name or properties.name or properties.Title or properties.title or "sp4m.wtf",
@@ -430,7 +436,6 @@ function library:window(properties)
 
 	local animated_text = library:animation(cfg.name .. " | private")
 
-	-- watermark
 	local __holder = library:create("Frame", {
 		Parent = library.gui,
 		Name = "",
@@ -517,6 +522,7 @@ function library:window(properties)
 		Name = "",
 		FontFace = library.font,
 		TextColor3 = Color3.fromRGB(170, 170, 170),
+        RichText = true,
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		Text = "ledger.live",
 		TextStrokeTransparency = 0.5,
@@ -576,9 +582,7 @@ function library:window(properties)
 			task.wait(0.2)
 		end
 	end)
-	--
 
-	-- window
 	local inline1 = library:create("Frame", {
 		Parent = library.gui,
 		Name = "",
@@ -676,6 +680,7 @@ function library:window(properties)
 		TextColor3 = Color3.fromRGB(170, 170, 170),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		Text = cfg.name,
+        RichText = true,
 		TextStrokeTransparency = 0.5,
 		BorderSizePixel = 0,
 		BackgroundTransparency = 1,
@@ -740,9 +745,7 @@ function library:window(properties)
 			task.wait()
 		end
 	end)
-	--
 
-	-- esp preview
 	local esp_preview = library:create("Frame", {
 		Parent = library.gui,
 		Name = "",
@@ -768,6 +771,7 @@ function library:window(properties)
 		TextColor3 = Color3.fromRGB(170, 170, 170),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		Text = "esp preview",
+        RichText = true,
 		TextStrokeTransparency = 0.5,
 		BorderSizePixel = 0,
 		BackgroundTransparency = 1,
@@ -1454,9 +1458,7 @@ function library:window(properties)
 	})
 
 	library:apply_theme(glow, "accent", "ImageColor3")
-	--
 
-	-- playerlist
 	local selected_button
 	local selected_player
 	local player_buttons = {}
@@ -2067,9 +2069,7 @@ function library:window(properties)
 	library:connection(players.PlayerRemoving, function(player)
 		player_buttons[player.Name].instance:Destroy()
 	end)
-	--
 
-	-- keybind list
 	local old_kblist = library:create("Frame", {
 		Parent = library.gui,
 		Name = "",
@@ -2213,7 +2213,6 @@ function library:window(properties)
 	})
 
 	library.keybind_path = tabs
-	--
 
 	function cfg.toggle_list(bool)
 		old_kblist.Visible = bool
@@ -2285,7 +2284,6 @@ function library:new_keybind(properties)
 		return __text or "..."
 	end
 
-	-- Shit ass function
 	function cfg.update(n_properties)
 		cfg.change_text(
 			"["
@@ -2311,8 +2309,6 @@ function library:notification(properties)
 		text = properties.text or properties.name or "ledger.live is pasted",
 	}
 
-	-- 28 offset
-
 	function cfg:refresh_notifications()
 		for _, notif in next, library.notifications do
 			tween_service
@@ -2325,7 +2321,6 @@ function library:notification(properties)
 		end
 	end
 
-	-- Instances
 	local holder = library:create("Frame", {
 		Parent = library.gui,
 		Name = "",
@@ -2383,6 +2378,7 @@ function library:notification(properties)
 		TextColor3 = Color3.fromRGB(170, 170, 170),
 		BorderColor3 = Color3.fromRGB(0, 0, 0),
 		Text = cfg.text,
+        RichText = true,
 		TextStrokeTransparency = 0.5,
 		Size = UDim2.new(0, 0, 1, 0),
 		Position = UDim2.new(0, 8, 0, 0),
@@ -2441,7 +2437,6 @@ function library:notification(properties)
 	})
 
 	library:apply_theme(glow, "accent", "ImageColor3")
-	--
 
 	task.spawn(function()
 		tween_service
@@ -2506,7 +2501,6 @@ function library:tab(properties)
 		enabled = false,
 	}
 
-	-- Button
 	local TAB_BUTTON = library:create("TextButton", {
 		Parent = self.tab_holder,
 		Name = "",
@@ -2564,9 +2558,7 @@ function library:tab(properties)
 		BorderSizePixel = 0,
 		BackgroundColor3 = Color3.fromRGB(0, 0, 0),
 	})
-	--
 
-	-- Tab Instances
 	local TAB = library:create("Frame", {
 		Parent = self.tab_instance_holder,
 		Name = "",
@@ -2680,7 +2672,6 @@ function library:tab(properties)
 		Name = "",
 		PaddingBottom = UDim.new(0, 15),
 	})
-	--
 
 	function cfg.open_tab()
 		if library.current_tab and library.current_tab[1] ~= TAB_BUTTON then
@@ -2722,7 +2713,6 @@ function library:section(properties)
 		side = properties.side or properties.Side or "left",
 	}
 
-	-- Instances
 	local section = library:create("Frame", {
 		Parent = self[cfg.side],
 		Name = "",
@@ -2795,7 +2785,6 @@ function library:section(properties)
 		Name = "",
 		PaddingBottom = UDim.new(0, 13),
 	})
-	--
 
 	cfg["holder"] = elements
 
@@ -3234,7 +3223,6 @@ function library:toggle(properties)
 		previous_holder = self,
 	}
 
-	-- Instances
 	local object = library:create("TextButton", {
 		Parent = self.holder,
 		Name = "",
@@ -3339,7 +3327,6 @@ function library:toggle(properties)
 		Padding = UDim.new(0, 4),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 	})
-	--
 
 	function cfg.set(bool)
 		icon_2.Visible = bool
@@ -3671,7 +3658,6 @@ function library:dropdown(properties)
 		self.bottom_holder.Parent.TextYAlignment = Enum.TextYAlignment.Top
 	end
 
-	-- Instances
 	local dropdown_inline = library:create("Frame", {
 		Parent = cfg.name and bottom_components or self.bottom_holder,
 		Name = "",
@@ -3784,28 +3770,27 @@ function library:dropdown(properties)
 		PaddingBottom = UDim.new(0, 4),
 	})
 
-	-- local op3 = library:create("TextButton", {
-	--     Parent = options,
-	--     Name = "",
-	--     FontFace = library.font,
-	--     TextColor3 = Color3.fromRGB(170, 170, 170),
-	--     BorderColor3 = Color3.fromRGB(56, 56, 56),
-	--     Text = "option 3",
-	--     TextStrokeTransparency = 0.5,
-	--     Size = UDim2.new(1, 0, 0, 14),
-	--     TextXAlignment = Enum.TextXAlignment.Left,
-	--     Position = UDim2.new(0, 2, 0, 2),
-	--     BorderSizePixel = 0,
-	--     TextSize = 12,
-	--     BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-	-- })
+	local op3 = library:create("TextButton", {
+	    Parent = options,
+	    Name = "",
+	    FontFace = library.font,
+	    TextColor3 = Color3.fromRGB(170, 170, 170),
+	    BorderColor3 = Color3.fromRGB(56, 56, 56),
+	    Text = "option 3",
+	    TextStrokeTransparency = 0.5,
+	    Size = UDim2.new(1, 0, 0, 14),
+	    TextXAlignment = Enum.TextXAlignment.Left,
+	    Position = UDim2.new(0, 2, 0, 2),
+	    BorderSizePixel = 0,
+	    TextSize = 12,
+	    BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+	})
 
-	-- local UIPadding = library:create("UIPadding", {
-	--     Parent = op3,
-	--     Name = "",
-	--     PaddingLeft = UDim.new(0, 5)
-	-- })
-	--
+	local UIPadding = library:create("UIPadding", {
+	    Parent = op3,
+	    Name = "",
+	    PaddingLeft = UDim.new(0, 5)
+	})
 
 	function cfg.set_visible(bool)
 		content_inline.Visible = bool
@@ -3922,7 +3907,7 @@ function library:colorpicker(properties)
 	local cfg = {
 		name = properties.name or nil,
 		flag = properties.flag or tostring(2 ^ 789),
-		color = properties.color or properties.default or Color3.new(1, 1, 1), -- Default to white color if not provided
+		color = properties.color or properties.default or Color3.new(1, 1, 1),
 		alpha = properties.alpha or 1,
 		callback = properties.callback or function() end,
 		animation = "normal",
@@ -3940,7 +3925,6 @@ function library:colorpicker(properties)
 	local h, s, v = cfg.color:ToHSV()
 	local a = cfg.alpha
 
-	-- Button Instances
 	local right_components
 	if cfg.name then
 		local object = library:create("TextLabel", {
@@ -4018,9 +4002,7 @@ function library:colorpicker(properties)
 		BorderSizePixel = 0,
 		SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79)),
 	})
-	--
 
-	-- Colorpicker Instances
 	local picker_inline = library:create("Frame", {
 		Parent = library.gui,
 		Name = "",
@@ -4277,9 +4259,6 @@ function library:colorpicker(properties)
 		BackgroundColor3 = Color3.fromRGB(204, 41, 41),
 	})
 
-	--
-
-	-- Animation Handling
 	local content_inline = library:create("Frame", {
 		Parent = library.gui,
 		Name = "",
@@ -4420,7 +4399,6 @@ function library:colorpicker(properties)
 		PaddingBottom = UDim.new(0, 1),
 		PaddingLeft = UDim.new(0, 5),
 	})
-	--
 
 	function cfg.set_visible(bool)
 		picker_inline.Visible = bool
@@ -4686,7 +4664,6 @@ function library:keybind(properties)
 		mode = cfg.mode,
 	})
 
-	-- Instances
 	local right_components
 	if cfg.name then
 		local object = library:create("TextLabel", {
@@ -4863,7 +4840,6 @@ function library:keybind(properties)
 		Name = "",
 		PaddingBottom = UDim.new(0, 4),
 	})
-	--
 
 	function cfg.set_visible(bool)
 		content_inline.Visible = bool
@@ -5054,8 +5030,6 @@ function library:keybind(properties)
 				or Enum.UserInputType.MouseButton2
 				or Enum.UserInputType.MouseButton3
 			then
-				-- I put this giant elseif to avoid having "mousemovement" as a keybind
-
 				cfg.set(input.UserInputType)
 			end
 
@@ -5360,31 +5334,31 @@ function library:panel(properties)
 		Name = "",
 	})
 
-	-- local textbox_inline = library:create("Frame", {
-	--     Parent = Frame,
-	--     Name = "",
-	--     Position = UDim2.new(0, -15, 0, 2),
-	--     BorderColor3 = Color3.fromRGB(19, 19, 19),
-	--     Size = UDim2.new(0, 130, 0, 16),
-	--     BorderSizePixel = 0,
-	--     BackgroundColor3 = Color3.fromRGB(8, 8, 8)
-	-- })
+	local textbox_inline = library:create("Frame", {
+	    Parent = Frame,
+	    Name = "",
+	    Position = UDim2.new(0, -15, 0, 2),
+	    BorderColor3 = Color3.fromRGB(19, 19, 19),
+        Size = UDim2.new(0, 130, 0, 16),
+	    BorderSizePixel = 0,
+	    BackgroundColor3 = Color3.fromRGB(8, 8, 8)
+	})
 
-	-- local textbox = library:create("TextBox", {
-	--     Parent = textbox_inline,
-	--     Name = "",
-	--     FontFace = library.font,
-	--     TextColor3 = Color3.fromRGB(170, 170, 170),
-	--     BorderColor3 = Color3.fromRGB(56, 56, 56),
-	--     Text = "",
-	--     TextStrokeTransparency = 0.5,
-	--     Size = UDim2.new(1, -4, 1, -4),
-	--     PlaceholderColor3 = Color3.fromRGB(90, 90, 90),
-	--     Position = UDim2.new(0, 2, 0, 2),
-	--     PlaceholderText = "name",
-	--     TextSize = 12,
-	--     BackgroundColor3 = Color3.fromRGB(38, 38, 38)
-	-- })
+	local textbox = library:create("TextBox", {
+	    Parent = textbox_inline,
+	    Name = "",
+	    FontFace = library.font,
+	   TextColor3 = Color3.fromRGB(170, 170, 170),
+	    BorderColor3 = Color3.fromRGB(56, 56, 56),
+	    Text = "",
+	    TextStrokeTransparency = 0.5,
+	    Size = UDim2.new(1, -4, 1, -4),
+	    PlaceholderColor3 = Color3.fromRGB(90, 90, 90),
+	    Position = UDim2.new(0, 2, 0, 2),
+	    PlaceholderText = "name",
+	    TextSize = 12,
+	    BackgroundColor3 = Color3.fromRGB(38, 38, 38)
+	})
 
 	for _, v in next, cfg.options do
 		local button_inline = library:create("Frame", {
@@ -5418,7 +5392,5 @@ function library:panel(properties)
 		end)
 	end
 end
---
---
 
 return library
