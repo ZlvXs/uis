@@ -4048,4 +4048,4 @@ do
 	end
 end
 
-return Library
+return Library, Notifications
